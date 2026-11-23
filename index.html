@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101d35">
+<meta name="description" content="Your personal news and weather briefing.">
+<title>My Morning Briefing</title>
+<style>
+:root{--navy:#101d35;--navy2:#1b2d4d;--gold:#e8b85b;--bg:#f3f6fa;--text:#202b3c;--muted:#68778b;--line:#e4e9f0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Arial,Helvetica,sans-serif}
+header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;padding:26px 18px 22px;border-bottom:4px solid var(--gold)}
+.wrap{max-width:760px;margin:auto}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:48px;height:48px;border-radius:14px;background:#fff;color:var(--navy);display:grid;place-items:center;font-size:27px}
+h1{font-size:23px;margin:0}.tagline{margin:3px 0 0;color:#d3ddec;font-size:13px}
+.location{margin-top:18px;color:#dce6f2;font-size:13px}
+main{max-width:760px;margin:auto;padding:20px 14px 35px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 2px 16px}
+h2{font-size:19px;margin:0}.date{font-size:12px;color:var(--muted);margin-top:3px}
+button{border:0;border-radius:10px;padding:11px 15px;background:var(--gold);color:#172238;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+.card{background:white;border:1px solid var(--line);border-radius:15px;padding:17px;margin-bottom:13px;box-shadow:0 3px 12px #14284608}
+.heading{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+.icon{width:36px;height:36px;border-radius:11px;background:#edf3fa;display:grid;place-items:center;font-size:19px}
+h3{font-size:16px;color:var(--navy);margin:0}.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.weather{background:linear-gradient(135deg,#eaf2fb,#f7f9fc);border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between}
+.temp{font-size:42px;font-weight:bold;color:var(--navy);letter-spacing:-2px}.desc{font-size:13px;color:var(--muted)}.weathericon{font-size:42px}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.detail{background:#f7f9fc;border-radius:9px;padding:10px}.label{font-size:11px;color:var(--muted)}.value{font-weight:bold;color:var(--navy);margin-top:3px}
+.forecast{display:grid;gap:7px}.day{display:grid;grid-template-columns:1fr 1.2fr auto;gap:7px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line);font-size:12px}.day:last-child{border:0}.day strong{color:var(--navy)}.daytemp{font-weight:bold;white-space:nowrap}
+.alert{background:#fff5e8;border:1px solid #f0d3a9;color:#754b12;border-radius:9px;padding:11px;font-size:12px;margin-top:9px}
+.empty,.note{font-size:12px;color:var(--muted)}.note{margin:11px 0 0}
+.links{display:grid;gap:8px}.link{display:block;text-decoration:none;color:var(--navy);background:#f7f9fc;border:1px solid var(--line);padding:11px;border-radius:9px;font-size:13px;font-weight:bold}.link span{display:block;color:var(--muted);font-size:11px;font-weight:normal;margin-top:3px}
+.status{text-align:center;color:var(--muted);font-size:12px;margin:14px 0}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:0 15px 25px}
+@media(min-width:600px){header{padding-left:25px;padding-right:25px}main{padding:25px 22px 40px}.card{padding:20px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+ <div class="brand"><div class="logo">🌅</div><div><h1>My Morning Briefing</h1><p class="tagline">Your news. Your weather. Your morning.</p></div></div>
+ <div class="location">📍 Clay, Alabama</div>
+</div></header>
+<main>
+ <div class="top"><div><h2>Your daily briefing</h2><div class="date" id="today">Loading date…</div></div><button id="refresh" type="button">↻ Refresh</button></div>
+
+ <section class="card">
+  <div class="heading"><div class="icon">🌤️</div><div><h3>1. Local Weather</h3><div class="sub">Current conditions in Clay</div></div></div>
+  <div class="weather"><div><div class="temp" id="temp">--°</div><div class="desc" id="conditions">Loading conditions…</div></div><div class="weathericon" id="weatherIcon">🌤️</div></div>
+  <div class="details"><div class="detail"><div class="label">Today's high / low</div><div class="value" id="highlow">-- / --</div></div><div class="detail"><div class="label">Chance of precipitation</div><div class="value" id="rain">--</div></div></div>
+  <div id="alerts"><p class="empty">Checking weather alerts…</p></div>
+  <p class="note">Source: National Weather Service.</p>
+ </section>
+
+ <section class="card">
+  <div class="heading"><div class="icon">📅</div><div><h3>2. Five-Day Forecast</h3><div class="sub">Upcoming weather for Clay, Alabama</div></div></div>
+  <div class="forecast" id="forecast"><p class="empty">Loading forecast…</p></div>
+ </section>
+
+ <section class="card">
+  <div class="heading"><div class="icon">🌎</div><div><h3>3. National & World News</h3><div class="sub">Important developments and headlines</div></div></div>
+  <div class="links">
+   <a class="link" href="https://news.google.com/search?q=United%20States%20national%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">U.S. National News<span>Open current national headlines</span></a>
+   <a class="link" href="https://news.google.com/search?q=world%20international%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">World & International News<span>Open current international headlines</span></a>
+   <a class="link" href="https://news.google.com/search?q=government%20public%20safety%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Government, Economy & Public Safety<span>Explore significant developments</span></a>
+  </div><p class="note">Initial version: links open current coverage. We'll work toward displaying headlines inside the app.</p>
+ </section>
+
+ <section class="card">
+  <div class="heading"><div class="icon">🏡</div><div><h3>4. Alabama & Birmingham News</h3><div class="sub">State and local developments</div></div></div>
+  <div class="links">
+   <a class="link" href="https://news.google.com/search?q=Alabama%20state%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Alabama News<span>Statewide news and developments</span></a>
+   <a class="link" href="https://news.google.com/search?q=Birmingham%20Alabama%20local%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Birmingham & Surrounding Area<span>Community, education, business and public safety</span></a>
+  </div><p class="note">We'll work on displaying local headlines directly in the app.</p>
+ </section>
+
+ <section class="card">
+  <div class="heading"><div class="icon">📈</div><div><h3>5. Stock Market & Financial News</h3><div class="sub">What investors and retirement savers should know</div></div></div>
+  <div class="links">
+   <a class="link" href="https://news.google.com/search?q=Federal%20Reserve%20inflation%20interest%20rates&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Federal Reserve, Inflation & Interest Rates<span>Economic policy and its implications</span></a>
+   <a class="link" href="https://news.google.com/search?q=US%20economy%20employment%20financial%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Economy & Employment<span>Important economic developments</span></a>
+   <a class="link" href="https://news.google.com/search?q=investing%20retirement%20savings%20financial%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Investing & Retirement<span>Developments affecting long-term savers</span></a>
+  </div><p class="note">Focuses on developments and explanations, not routine daily index-point or percentage changes.</p>
+ </section>
+ <div class="status" id="status">Weather has not been refreshed yet.</div>
+</main>
+<footer>My Morning Briefing · Personal news and weather dashboard</footer>
+<script>
+const pointUrl="https://api.weather.gov/points/33.6534,-86.6086";
+const $=id=>document.getElementById(id);
+function emoji(s){s=(s||"").toLowerCase();if(s.includes("thunder"))return"⛈️";if(s.includes("snow")||s.includes("ice"))return"❄️";if(s.includes("rain")||s.includes("shower"))return"🌧️";if(s.includes("cloud"))return"☁️";if(s.includes("fog"))return"🌫️";if(s.includes("clear")||s.includes("sunny"))return"☀️";return"🌤️"}
+async function getJson(url){const r=await fetch(url,{headers:{Accept:"application/geo+json"}});if(!r.ok)throw Error("Weather service error "+r.status);return r.json()}
+function showCurrent(p){const t=p.temperature;$("temp").textContent=t&&t.value!==null?Math.round(t.unitCode&&t.unitCode.includes("degC")?t.value*9/5+32:t.value)+"°F":"--°";$("conditions").textContent=p.textDescription||"Current conditions";$("weatherIcon").textContent=emoji(p.textDescription)}
+function showFallback(){$("temp").textContent="--°";$("conditions").textContent="Current observation unavailable; see forecast below."}
+function showForecast(periods){
+ const days=periods.filter(p=>p.isDaytime),today=days[0],tonight=periods.find(p=>!p.isDaytime);
+ if(today){$("highlow").textContent=today.temperature+"° / "+(tonight?tonight.temperature+"°":"--");const chance=today.probabilityOfPrecipitation;$("rain").textContent=chance&&chance.value!==null?chance.value+"%":"Not available"}
+ $("forecast").replaceChildren();
+ days.slice(0,5).forEach(p=>{const row=document.createElement("div");row.className="day";const name=document.createElement("strong");name.textContent=p.name;const desc=document.createElement("span");desc.textContent=emoji(p.shortForecast)+" "+p.shortForecast;const temp=document.createElement("span");temp.className="daytemp";temp.textContent=p.temperature+"°"+p.temperatureUnit;row.append(name,desc,temp);$("forecast").append(row)});
+ if(!days.length)$("forecast").textContent="Forecast currently unavailable.";
+}
+function showAlerts(features){$("alerts").replaceChildren();if(!features.length){const p=document.createElement("p");p.className="empty";p.textContent="No active NWS alerts were returned for this location."; $("alerts").append(p);return}
+ features.forEach(f=>{const box=document.createElement("div");box.className="alert";const b=document.createElement("strong");b.textContent="⚠ "+(f.properties.event||"Weather alert");const p=document.createElement("div");p.textContent=f.properties.headline||"See the official alert for details.";box.append(b,p);$("alerts").append(box)})}
+async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
+ try{const point=await getJson(pointUrl),p=point.properties;const results=await Promise.allSettled([getJson(p.forecast),getJson("https://api.weather.gov/alerts/active?point=33.6534,-86.6086"),getJson(p.observationStations)]);
+ if(results[0].status==="fulfilled")showForecast(results[0].value.properties.periods);else $("forecast").textContent="Forecast temporarily unavailable. Please try again.";
+ if(results[1].status==="fulfilled")showAlerts(results[1].value.features||[]);else $("alerts").textContent="Could not check alerts. Visit weather.gov for current information.";
+ if(results[2].status==="fulfilled"){const stations=results[2].value.features||[];if(stations.length){try{const obs=await getJson("https://api.weather.gov/stations/"+stations[0].properties.stationIdentifier+"/observations/latest");showCurrent(obs.properties)}catch(e){showFallback()}}else showFallback()}else showFallback();
+ status.textContent="Weather updated "+new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})+". News links open current coverage.";
+ }catch(e){status.textContent="Weather could not be updated. Check your internet connection and try again.";console.error(e)}
+ finally{btn.disabled=false;btn.textContent="↻ Refresh"}}
+$("refresh").addEventListener("click",refresh);
+$("today").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+refresh();
+</script>
+</body>
+</html>
