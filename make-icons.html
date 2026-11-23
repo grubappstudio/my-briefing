@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Briefing Icon Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="font-family:Arial;text-align:center;padding:30px;background:#f3f6fa">
+  <h2>My Briefing Icon Generator</h2>
+  <p>Use the buttons below to create your app icons.</p>
+  <button onclick="downloadIcon(192)"
+    style="padding:15px;margin:10px">Download 192 × 192</button>
+  <button onclick="downloadIcon(512)"
+    style="padding:15px;margin:10px">Download 512 × 512</button>
+
+<script>
+function downloadIcon(size) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#172b4d";
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.fillStyle = "#f6bd55";
+  ctx.beginPath();
+  ctx.arc(size/2, size*.46, size*.23, Math.PI, 0);
+  ctx.fill();
+
+  ctx.fillStyle = "#172b4d";
+  ctx.fillRect(size*.12, size*.46, size*.76, size*.28);
+
+  ctx.strokeStyle = "#f6bd55";
+  ctx.lineWidth = size*.035;
+  ctx.beginPath();
+  ctx.moveTo(size*.16, size*.64);
+  ctx.lineTo(size*.84, size*.64);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#75b9e7";
+  ctx.lineWidth = size*.025;
+  ctx.beginPath();
+  ctx.moveTo(size*.28, size*.75);
+  ctx.lineTo(size*.72, size*.75);
+  ctx.stroke();
+
+  const link = document.createElement("a");
+  link.download = "icon-" + size + ".png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+</script>
+</body>
+</html>
