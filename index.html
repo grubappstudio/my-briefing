@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#101d35">
 <meta name="description" content="Your personal news and weather briefing.">
 <title>My Morning Briefing</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<meta name="theme-color" content="#101d35">
 <style>
 :root{--navy:#101d35;--navy2:#1b2d4d;--gold:#e8b85b;--bg:#f3f6fa;--text:#202b3c;--muted:#68778b;--line:#e4e9f0}
 *{box-sizing:border-box}
@@ -129,5 +132,13 @@ $("refresh").addEventListener("click",refresh);
 $("today").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 refresh();
 </script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch(error => console.error("Service worker error:", error));
+  });
+}
+</script> 
 </body>
 </html>
