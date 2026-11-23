@@ -107,7 +107,21 @@ async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=
  try{const point=await getJson(pointUrl),p=point.properties;const results=await Promise.allSettled([getJson(p.forecast),getJson("https://api.weather.gov/alerts/active?point=33.6534,-86.6086"),getJson(p.observationStations)]);
  if(results[0].status==="fulfilled")showForecast(results[0].value.properties.periods);else $("forecast").textContent="Forecast temporarily unavailable. Please try again.";
  if(results[1].status==="fulfilled")showAlerts(results[1].value.features||[]);else $("alerts").textContent="Could not check alerts. Visit weather.gov for current information.";
- if(results[2].status==="fulfilled"){const stations=results[2].value.features||[];if(stations.length){try{const obs=await getJson("https://api.weather.gov/stations/"+stations[0].properties.stationIdentifier+"/observations/latest");showCurrent(obs.properties)}catch(e){showFallback()}}else showFallback()}else showFallback();
+ if(results[2].status==="fulfilled"){
+  const stations=results[2].value.features||[];let found=false;
+  // The nearest station can occasionally have no usable latest observation.
+  // Try several nearby stations until one returns a valid temperature.
+  for(const station of stations.slice(0,8)){
+   const id=station.properties&&station.properties.stationIdentifier;
+   if(!id)continue;
+   try{
+    const obs=await getJson("https://api.weather.gov/stations/"+id+"/observations/latest");
+    const data=obs.properties;
+    if(data&&data.temperature&&data.temperature.value!==null){showCurrent(data);found=true;break;}
+   }catch(e){/* Try the next nearby station. */}
+  }
+  if(!found)showFallback();
+ }else showFallback();
  status.textContent="Weather updated "+new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})+". News links open current coverage.";
  }catch(e){status.textContent="Weather could not be updated. Check your internet connection and try again.";console.error(e)}
  finally{btn.disabled=false;btn.textContent="↻ Refresh"}}
