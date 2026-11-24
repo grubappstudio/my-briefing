@@ -64,6 +64,21 @@ h2{font-size:22px;letter-spacing:-.3px;margin:0;color:var(--navy)}
   margin-top:5px;
   line-height:1.4;
 }
+.current-time{
+  display:block;
+  font-size:26px;
+  font-weight:700;
+  color:#263F57;
+  line-height:1.2;
+}
+
+.current-date{
+  display:block;
+  font-size:15px;
+  font-weight:500;
+  color:#50677F;
+  margin-top:3px;
+}  
 button{
   border:0;border-radius:9px;
   padding:11px 16px;
@@ -655,21 +670,22 @@ async function loadNews() {
  }catch(e){status.textContent="Weather could not be updated. Check your internet connection and try again.";console.error(e)}
  finally{btn.disabled=false;btn.textContent="↻ Refresh"}}
 $("refresh").addEventListener("click",refresh);
-.current-time{
-  display:block;
-  font-size:26px;
-  font-weight:700;
-  color:#263F57;
-  line-height:1.2;
+
+function updateDateTime(){
+  const now = new Date();
+
+  $("today").innerHTML =
+    '<span class="current-time">' +
+    now.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}) +
+    '</span>' +
+    '<span class="current-date">' +
+    now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}) +
+    '</span>';
 }
 
-.current-date{
-  display:block;
-  font-size:15px;
-  font-weight:500;
-  color:#50677F;
-  margin-top:3px;
-}
+updateDateTime();
+setInterval(updateDateTime,60000);
+
 refresh();
 </script>
 <script>
