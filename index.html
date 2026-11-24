@@ -57,7 +57,13 @@ main{max-width:900px;margin:auto;padding:24px 16px 42px}
   margin:0 2px 19px;
 }
 h2{font-size:22px;letter-spacing:-.3px;margin:0;color:var(--navy)}
-.date{font-size:13px;color:var(--muted);margin-top:3px}
+.date{
+  font-size:19px;
+  font-weight:700;
+  color:#263F57;
+  margin-top:5px;
+  line-height:1.4;
+}
 button{
   border:0;border-radius:9px;
   padding:11px 16px;
@@ -201,8 +207,12 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:0 15px 28px}
  <div class="location">📍 Clay, Alabama</div>
 </div></header>
 <main>
- <div class="top"><div><h2>Your Daily Briefing</h2><div class="date" id="today">Loading date…</div></div><button id="refresh" type="button">↻ Refresh</button></div>
-
+<div class="top">
+  <div>
+    <div class="date" id="today">Loading date and time…</div>
+  </div>
+  <button id="refresh" type="button">↻ Refresh</button>
+</div>
  <section class="card">
   <div class="heading"><div class="icon">🌤️</div><div><h3>Local Weather</h3><div class="sub">Current conditions in Clay</div></div></div>
   <div class="weather"><div><div class="temp" id="temp">--°</div><div class="desc" id="conditions">Loading conditions…</div></div><div class="weathericon" id="weatherIcon">🌤️</div></div>
@@ -645,7 +655,21 @@ async function loadNews() {
  }catch(e){status.textContent="Weather could not be updated. Check your internet connection and try again.";console.error(e)}
  finally{btn.disabled=false;btn.textContent="↻ Refresh"}}
 $("refresh").addEventListener("click",refresh);
-$("today").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+.current-time{
+  display:block;
+  font-size:26px;
+  font-weight:700;
+  color:#263F57;
+  line-height:1.2;
+}
+
+.current-date{
+  display:block;
+  font-size:15px;
+  font-weight:500;
+  color:#50677F;
+  margin-top:3px;
+}
 refresh();
 </script>
 <script>
