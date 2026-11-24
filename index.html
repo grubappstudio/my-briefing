@@ -161,7 +161,137 @@ function showForecast(periods){
 
 function showAlerts(features){$("alerts").replaceChildren();if(!features.length){const p=document.createElement("p");p.className="empty";p.textContent="No active NWS alerts were returned for this location."; $("alerts").append(p);return}
  features.forEach(f=>{const box=document.createElement("div");box.className="alert";const b=document.createElement("strong");b.textContent="⚠ "+(f.properties.event||"Weather alert");const p=document.createElement("div");p.textContent=f.properties.headline||"See the official alert for details.";box.append(b,p);$("alerts").append(box)})}
-async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
+
+async function readNewsFeed(url, source, useProxy = true) {
+  const requestUrl = useProxy
+    ? "https://proxy.cors.dev/" + url
+    : url;
+
+  const response = await fetch(requestUrl, {
+    credentials: "omit"
+  });
+
+  if (!response.ok) {
+    throw new Error(source + " feed unavailable");
+  }
+
+  const xml = new DOMParser().parseFromString(
+    await response.text(),
+    "application/xml"
+  );
+
+  if (xml.querySelector("parsererror")) {
+    throw new Error(source + " feed could not be read");
+  }
+
+  return Array.from(xml.querySelectorAll("item")).map(item => ({
+    title: item.querySelector("title")?.textContent.trim() || "",
+    link: item.querySelector("link")?.textContent.trim() || "",
+    date: new Date(item.querySelector("pubDate")?.textContent || 0),
+    source
+  })).filter(item =>
+    item.title &&
+    /^https?:\/\//i.test(item.link)
+  );
+}
+
+function renderNews(id, items) {
+  const container = $(id);
+  container.replaceChildren();
+
+  if (!items.length) {
+    const message = document.createElement("p");
+    message.className = "empty";
+    message.textContent = "Headlines are temporarily unavailable.";
+    container.append(message);
+    return;
+  }
+
+  items.slice(0, 5).forEach(item => {
+    const link = document.createElement("a");
+    link.className = "news-item";
+    link.href = item.link;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+
+    const meta = document.createElement("span");
+    meta.className = "news-meta";
+
+    const dateText = Number.isNaN(item.date.getTime())
+      ? ""
+      : item.date.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+
+    meta.textContent = [item.source, dateText]
+      .filter(Boolean)
+      .join(" · ");
+
+    link.append(title, meta);
+    container.append(link);
+  });
+}
+
+async function loadNews() {
+  const feeds = {
+    national: [
+      ["https://feeds.bbci.co.uk/news/rss.xml", "BBC News"],
+      ["https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", "The New York Times", false]
+    ],
+    world: [
+      ["https://feeds.bbci.co.uk/news/world/rss.xml", "BBC World"]
+    ],
+    local: [
+      ["https://www.wvtm13.com/topstories-rss", "WVTM 13"],
+      ["https://birminghamwatch.org/feed", "BirminghamWatch"]
+    ],
+    financial: [
+      ["https://feeds.bbci.co.uk/news/business/rss.xml", "BBC Business"],
+      ["https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", "The New York Times", false]
+    ]
+  };
+
+  async function collect(list) {
+    const results = await Promise.allSettled(
+      list.map(([url, source, useProxy]) =>
+        readNewsFeed(url, source, useProxy !== false)
+      )
+    );
+
+    return results
+      .filter(result => result.status === "fulfilled")
+      .flatMap(result => result.value)
+      .sort((a, b) => b.date - a.date);
+  }
+
+  const [national, world, local, financial] = await Promise.all([
+    collect(feeds.national),
+    collect(feeds.world),
+    collect(feeds.local),
+    collect(feeds.financial)
+  ]);
+
+  const combined = [...national, ...world];
+  const seen = new Set();
+
+  const uniqueNational = combined.filter(item => {
+    const key = item.title.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  renderNews("news-national", uniqueNational);
+  renderNews("news-local", local);
+  renderNews("news-financial", financial);
+}
+ async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
  try{const point=await getJson(pointUrl),p=point.properties;const results=await Promise.allSettled([getJson(p.forecast),getJson("https://api.weather.gov/alerts/active?point=33.6534,-86.6086"),getJson(p.observationStations)]);
  if(results[0].status==="fulfilled")showForecast(results[0].value.properties.periods);else $("forecast").textContent="Forecast temporarily unavailable. Please try again.";
  if(results[1].status==="fulfilled")showAlerts(results[1].value.features||[]);else $("alerts").textContent="Could not check alerts. Visit weather.gov for current information.";
