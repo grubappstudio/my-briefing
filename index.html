@@ -97,13 +97,49 @@ function emoji(s){s=(s||"").toLowerCase();if(s.includes("thunder"))return"⛈️
 async function getJson(url){const r=await fetch(url,{headers:{Accept:"application/geo+json"}});if(!r.ok)throw Error("Weather service error "+r.status);return r.json()}
 function showCurrent(p){const t=p.temperature;$("temp").textContent=t&&t.value!==null?Math.round(t.unitCode&&t.unitCode.includes("degC")?t.value*9/5+32:t.value)+"°F":"--°";$("conditions").textContent=p.textDescription||"Current conditions";$("weatherIcon").textContent=emoji(p.textDescription)}
 function showFallback(){$("temp").textContent="--°";$("conditions").textContent="Current observation unavailable; see forecast below."}
+
 function showForecast(periods){
- const days=periods.filter(p=>p.isDaytime),today=days[0],tonight=periods.find(p=>!p.isDaytime);
- if(today){$("highlow").textContent=today.temperature+"° / "+(tonight?tonight.temperature+"°":"--");const chance=today.probabilityOfPrecipitation;$("rain").textContent=chance&&chance.value!==null?chance.value+"%":"Not available"}
+ const days=periods.filter(p=>p.isDaytime);
+ const today=days[0];
+ const todayIndex=today?periods.indexOf(today):-1;
+ const tonight=todayIndex>=0
+  ?periods.slice(todayIndex+1).find(p=>!p.isDaytime)
+  :null;
+
+ if(today){
+  $("highlow").textContent="High "+today.temperature+"° / Low "+(tonight?tonight.temperature+"°":"--");
+  const chance=today.probabilityOfPrecipitation;
+  $("rain").textContent=chance&&chance.value!==null?chance.value+"%":"Not available";
+ }
+
  $("forecast").replaceChildren();
- days.slice(0,5).forEach(p=>{const row=document.createElement("div");row.className="day";const name=document.createElement("strong");name.textContent=p.name;const desc=document.createElement("span");desc.textContent=emoji(p.shortForecast)+" "+p.shortForecast;const temp=document.createElement("span");temp.className="daytemp";temp.textContent=p.temperature+"°"+p.temperatureUnit;row.append(name,desc,temp);$("forecast").append(row)});
+
+ days.slice(0,5).forEach(p=>{
+  const index=periods.indexOf(p);
+  const nextDayIndex=periods.findIndex((period,i)=>i>index&&period.isDaytime);
+  const night=periods.slice(index+1,nextDayIndex<0?undefined:nextDayIndex)
+   .find(period=>!period.isDaytime);
+
+  const row=document.createElement("div");
+  row.className="day";
+
+  const name=document.createElement("strong");
+  name.textContent=p.name;
+
+  const desc=document.createElement("span");
+  desc.textContent=emoji(p.shortForecast)+" "+p.shortForecast;
+
+  const temp=document.createElement("span");
+  temp.className="daytemp";
+  temp.textContent=p.temperature+"° / "+(night?night.temperature+"°":"--");
+
+  row.append(name,desc,temp);
+  $("forecast").append(row);
+ });
+
  if(!days.length)$("forecast").textContent="Forecast currently unavailable.";
 }
+
 function showAlerts(features){$("alerts").replaceChildren();if(!features.length){const p=document.createElement("p");p.className="empty";p.textContent="No active NWS alerts were returned for this location."; $("alerts").append(p);return}
  features.forEach(f=>{const box=document.createElement("div");box.className="alert";const b=document.createElement("strong");b.textContent="⚠ "+(f.properties.event||"Weather alert");const p=document.createElement("div");p.textContent=f.properties.headline||"See the official alert for details.";box.append(b,p);$("alerts").append(box)})}
 async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
