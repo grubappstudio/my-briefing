@@ -282,25 +282,41 @@ async function loadNews() {
     ]
   };
 
-  async function collect(list) {
-    const results = await Promise.allSettled(
-      list.map(([url, source]) => readNewsFeed(url, source))
-    );
 
-    return results
-      .filter(result => result.status === "fulfilled")
-      .flatMap(result => result.value)
-      .sort((a, b) => b.date - a.date);
-  }
+async function collect(list, maxAgeHours = 48) {
+  const results = await Promise.allSettled(
+    list.map(([url, source]) => readNewsFeed(url, source))
+  );
 
-  const [national, world, local, financial, positive] =
-    await Promise.all([
-      collect(feeds.national),
-      collect(feeds.world),
-      collect(feeds.local),
-      collect(feeds.financial),
-      collect(feeds.positive)
-    ]);
+  const cutoff = Date.now() - maxAgeHours * 60 * 60 * 1000;
+  const seen = new Set();
+
+  return results
+    .filter(result => result.status === "fulfilled")
+    .flatMap(result => result.value)
+    .filter(item =>
+      item.date instanceof Date &&
+      !Number.isNaN(item.date.getTime()) &&
+      item.date.getTime() >= cutoff &&
+      item.date.getTime() <= Date.now() + 24 * 60 * 60 * 1000
+    )
+    .sort((a, b) => b.date - a.date)
+    .filter(item => {
+      const key = item.title.toLowerCase().replace(/\s+/g, " ").trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+const [national, world, local, financial, positive] =
+  await Promise.all([
+    collect(feeds.national, 48),
+    collect(feeds.world, 48),
+    collect(feeds.local, 48),
+    collect(feeds.financial, 48),
+    collect(feeds.positive, 168)
+  ]);
 
   const combined = [...national, ...world];
   const seen = new Set();
