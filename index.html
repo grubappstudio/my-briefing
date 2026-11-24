@@ -175,37 +175,55 @@ function showForecast(periods){
 function showAlerts(features){$("alerts").replaceChildren();if(!features.length){const p=document.createElement("p");p.className="empty";p.textContent="No active NWS alerts were returned for this location."; $("alerts").append(p);return}
  features.forEach(f=>{const box=document.createElement("div");box.className="alert";const b=document.createElement("strong");b.textContent="⚠ "+(f.properties.event||"Weather alert");const p=document.createElement("div");p.textContent=f.properties.headline||"See the official alert for details.";box.append(b,p);$("alerts").append(box)})}
 
+
 async function readNewsFeed(url, source, useProxy = true) {
   const requestUrl = useProxy
     ? "https://proxy.cors.dev/" + url
     : url;
 
-  const response = await fetch(requestUrl, {
-    credentials: "omit"
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-  if (!response.ok) {
-    throw new Error(source + " feed unavailable");
+  try {
+    const response = await fetch(requestUrl, {
+      credentials: "omit",
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(source + " feed unavailable");
+    }
+
+    const xml = new DOMParser().parseFromString(
+      await response.text(),
+      "application/xml"
+    );
+
+    if (xml.querySelector("parsererror")) {
+      throw new Error(source + " feed could not be read");
+    }
+
+    return Array.from(xml.querySelectorAll("item")).map(item => ({
+      title: item.querySelector("title")?.textContent.trim() || "",
+      link: item.querySelector("link")?.textContent.trim() || "",
+      date: new Date(item.querySelector("pubDate")?.textContent || 0),
+      source
+    })).filter(item =>
+      item.title &&
+      /^https?:\/\//i.test(item.link)
+    );
+
+  } catch (error) {
+    if (error.name === "AbortError") {
+      console.warn(source + " feed timed out.");
+    } else {
+      console.warn(source + " feed failed:", error);
+    }
+    return [];
+
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const xml = new DOMParser().parseFromString(
-    await response.text(),
-    "application/xml"
-  );
-
-  if (xml.querySelector("parsererror")) {
-    throw new Error(source + " feed could not be read");
-  }
-
-  return Array.from(xml.querySelectorAll("item")).map(item => ({
-    title: item.querySelector("title")?.textContent.trim() || "",
-    link: item.querySelector("link")?.textContent.trim() || "",
-    date: new Date(item.querySelector("pubDate")?.textContent || 0),
-    source
-  })).filter(item =>
-    item.title &&
-    /^https?:\/\//i.test(item.link)
-  );
 }
 
 function renderNews(id, items) {
