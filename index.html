@@ -251,8 +251,8 @@ function renderNews(id, items) {
   });
 }
 
-async function loadNews() {
 
+async function loadNews() {
   const feeds = {
     national: [
       ["https://feeds.bbci.co.uk/news/rss.xml", "BBC News"],
@@ -265,19 +265,26 @@ async function loadNews() {
       ["https://www.cbs42.com/feed", "CBS 42"],
       ["https://birminghamwatch.org/feed", "BirminghamWatch"]
     ],
-financial: [
-  ["https://www.cnbc.com/id/20910258/device/rss/rss.html", "CNBC Economy"],
-  ["https://www.cnbc.com/id/15839069/device/rss/rss.html", "CNBC Investing"],
-  ["https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20409666", "CNBC Markets"],
-  ["https://www.federalreserve.gov/feeds/press_monetary.xml", "Federal Reserve"]
-]
+    financial: [
+      ["https://www.cnbc.com/id/20910258/device/rss/rss.html", "CNBC Economy"],
+      ["https://www.cnbc.com/id/15839069/device/rss/rss.html", "CNBC Investing"],
+      ["https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20409666", "CNBC Markets"],
+      ["https://www.federalreserve.gov/feeds/press_monetary.xml", "Federal Reserve"]
+    ],
+    positive: [
+      ["https://www.goodnewsnetwork.org/feed/", "Good News Network"],
+      ["https://www.goodnewsnetwork.org/category/news/inspiring/feed/", "Good News Network – Inspiring"],
+      ["https://www.positive.news/feed/", "Positive News"],
+      ["https://reasonstobecheerful.world/feed/", "Reasons to be Cheerful"],
+      ["https://www.cbsnews.com/latest/rss/evening-news-on-the-road", "CBS On the Road"],
+      ["https://www.cbsnews.com/latest/rss/sunday-morning", "CBS Sunday Morning"],
+      ["https://www.cbsnews.com/latest/rss/uplift-full-episodes", "CBS The Uplift"]
+    ]
   };
 
   async function collect(list) {
     const results = await Promise.allSettled(
-      list.map(([url, source, useProxy]) =>
-        readNewsFeed(url, source, useProxy !== false)
-      )
+      list.map(([url, source]) => readNewsFeed(url, source))
     );
 
     return results
@@ -286,12 +293,14 @@ financial: [
       .sort((a, b) => b.date - a.date);
   }
 
-  const [national, world, local, financial] = await Promise.all([
-    collect(feeds.national),
-    collect(feeds.world),
-    collect(feeds.local),
-    collect(feeds.financial)
-  ]);
+  const [national, world, local, financial, positive] =
+    await Promise.all([
+      collect(feeds.national),
+      collect(feeds.world),
+      collect(feeds.local),
+      collect(feeds.financial),
+      collect(feeds.positive)
+    ]);
 
   const combined = [...national, ...world];
   const seen = new Set();
@@ -303,9 +312,19 @@ financial: [
     return true;
   });
 
+  const positiveSeen = new Set();
+
+  const uniquePositive = positive.filter(item => {
+    const key = item.title.toLowerCase();
+    if (positiveSeen.has(key)) return false;
+    positiveSeen.add(key);
+    return true;
+  });
+
   renderNews("news-national", uniqueNational);
   renderNews("news-local", local);
   renderNews("news-financial", financial);
+  renderNews("news-positive", uniquePositive);
 }
  async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
    loadNews();
