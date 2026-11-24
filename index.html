@@ -375,6 +375,7 @@ async function readNewsFeed(url, source, useProxy = true) {
   }
 }
 
+
 function renderNews(id, items) {
   const container = $(id);
   container.replaceChildren();
@@ -387,7 +388,114 @@ function renderNews(id, items) {
     return;
   }
 
-  items.slice(0, 5).forEach(item => {
+  function scoreStory(item) {
+    const title = item.title.toLowerCase();
+    let score = 0;
+
+    // Major developments that generally deserve attention
+    const majorTerms = [
+      "breaking", "crisis", "emergency", "disaster",
+      "war", "invasion", "attack", "ceasefire",
+      "supreme court", "landmark ruling", "major deal",
+      "historic", "billion", "million"
+    ];
+
+    // Important national and international developments
+    const nationalTerms = [
+      "congress", "white house", "federal government",
+      "supreme court", "international", "president",
+      "sanctions", "treaty", "national security",
+      "immigration policy", "federal law"
+    ];
+
+    // Meaningful Alabama and local developments
+    const localTerms = [
+      "birmingham", "alabama", "jefferson county",
+      "school", "education", "hospital", "healthcare",
+      "business", "jobs", "employment", "community",
+      "infrastructure", "development", "public safety"
+    ];
+
+    // Financial and retirement-relevant developments
+    const financialTerms = [
+      "federal reserve", "interest rate", "inflation",
+      "unemployment", "jobs report", "recession",
+      "economy", "economic growth", "treasury",
+      "retirement", "401(k)", "social security",
+      "earnings", "corporate profits", "housing market"
+    ];
+
+    // Positive stories and inspiring developments
+    const positiveTerms = [
+      "helping", "donation", "generosity", "kindness",
+      "hero", "rescued", "saved", "reunited",
+      "community comes together", "inspiring",
+      "overcomes", "perseverance", "volunteers",
+      "makes a difference", "good deed", "surprise"
+    ];
+
+    function addMatches(terms, points) {
+      terms.forEach(term => {
+        if (title.includes(term)) score += points;
+      });
+    }
+
+    addMatches(majorTerms, 3);
+
+    if (id === "news-national") {
+      addMatches(nationalTerms, 3);
+
+      // Reduce routine political coverage
+      addMatches([
+        "campaign rally", "poll numbers",
+        "fundraising", "endorsement",
+        "campaign trail", "partisan feud"
+      ], -2);
+    }
+
+    if (id === "news-local") {
+      addMatches(localTerms, 3);
+
+      // Avoid routine Alabama political coverage
+      addMatches([
+        "campaign", "election", "political party",
+        "endorsement", "poll numbers", "partisan"
+      ], -3);
+    }
+
+    if (id === "news-financial") {
+      addMatches(financialTerms, 4);
+
+      // De-emphasize routine daily market summaries
+      addMatches([
+        "stocks edge higher", "stocks edge lower",
+        "market closes", "market opens",
+        "futures are little changed"
+      ], -2);
+    }
+
+    if (id === "news-positive") {
+      addMatches(positiveTerms, 4);
+    }
+
+    // Give newer stories a modest advantage
+    const ageHours = (Date.now() - item.date.getTime()) / 3600000;
+
+    if (ageHours < 6) score += 2;
+    else if (ageHours < 24) score += 1;
+
+    return score;
+  }
+
+  const rankedItems = [...items].sort((a, b) => {
+    const scoreDifference = scoreStory(b) - scoreStory(a);
+
+    if (scoreDifference !== 0) return scoreDifference;
+
+    return b.date - a.date;
+  });
+
+  rankedItems.slice(0, 5).forEach(item => {
     const link = document.createElement("a");
     link.className = "news-item";
     link.href = item.link;
@@ -417,8 +525,6 @@ function renderNews(id, items) {
     container.append(link);
   });
 }
-
-
 
 async function loadNews() {
   const feeds = {
