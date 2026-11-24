@@ -270,6 +270,7 @@ function renderNews(id, items) {
 }
 
 
+
 async function loadNews() {
   const feeds = {
     national: [
@@ -300,65 +301,70 @@ async function loadNews() {
     ]
   };
 
+  async function collect(list, maxAgeHours = 48) {
+    const results = await Promise.allSettled(
+      list.map(([url, source]) => readNewsFeed(url, source))
+    );
 
-async function collect(list, maxAgeHours = 48) {
-  const results = await Promise.allSettled(
-    list.map(([url, source]) => readNewsFeed(url, source))
-  );
+    const cutoff = Date.now() - maxAgeHours * 60 * 60 * 1000;
+    const seen = new Set();
 
-  const cutoff = Date.now() - maxAgeHours * 60 * 60 * 1000;
-  const seen = new Set();
+    return results
+      .filter(result => result.status === "fulfilled")
+      .flatMap(result => result.value)
+      .filter(item =>
+        item.date instanceof Date &&
+        !Number.isNaN(item.date.getTime()) &&
+        item.date.getTime() >= cutoff &&
+        item.date.getTime() <= Date.now() + 24 * 60 * 60 * 1000
+      )
+      .sort((a, b) => b.date - a.date)
+      .filter(item => {
+        const key = item.title.toLowerCase().replace(/\s+/g, " ").trim();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }
 
-  return results
-    .filter(result => result.status === "fulfilled")
-    .flatMap(result => result.value)
-    .filter(item =>
-      item.date instanceof Date &&
-      !Number.isNaN(item.date.getTime()) &&
-      item.date.getTime() >= cutoff &&
-      item.date.getTime() <= Date.now() + 24 * 60 * 60 * 1000
-    )
-    .sort((a, b) => b.date - a.date)
-    .filter(item => {
+  function removeDuplicates(items) {
+    const seen = new Set();
+
+    return items.filter(item => {
       const key = item.title.toLowerCase().replace(/\s+/g, " ").trim();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
-}
+  }
 
-const [national, world, local, financial, positive] =
-  await Promise.all([
-    collect(feeds.national, 48),
-    collect(feeds.world, 48),
-    collect(feeds.local, 48),
-    collect(feeds.financial, 48),
-    collect(feeds.positive, 168)
-  ]);
+  // Load National & World independently
+  (async () => {
+    const [national, world] = await Promise.all([
+      collect(feeds.national, 48),
+      collect(feeds.world, 48)
+    ]);
 
-  const combined = [...national, ...world];
-  const seen = new Set();
+    renderNews(
+      "news-national",
+      removeDuplicates([...national, ...world])
+    );
+  })();
 
-  const uniqueNational = combined.filter(item => {
-    const key = item.title.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
+  // Load Alabama & Birmingham independently
+  collect(feeds.local, 48).then(items => {
+    renderNews("news-local", items);
   });
 
-  const positiveSeen = new Set();
-
-  const uniquePositive = positive.filter(item => {
-    const key = item.title.toLowerCase();
-    if (positiveSeen.has(key)) return false;
-    positiveSeen.add(key);
-    return true;
+  // Load Financial independently
+  collect(feeds.financial, 48).then(items => {
+    renderNews("news-financial", items);
   });
 
-  renderNews("news-national", uniqueNational);
-  renderNews("news-local", local);
-  renderNews("news-financial", financial);
-  renderNews("news-positive", uniquePositive);
+  // Load Positive & Uplifting independently
+  collect(feeds.positive, 168).then(items => {
+    renderNews("news-positive", items);
+  });
 }
  async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
    loadNews();
