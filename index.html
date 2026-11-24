@@ -239,21 +239,22 @@ function renderNews(id, items) {
 }
 
 async function loadNews() {
+
   const feeds = {
     national: [
       ["https://feeds.bbci.co.uk/news/rss.xml", "BBC News"],
-      ["https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", "The New York Times", false]
+      ["https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", "The New York Times"]
     ],
     world: [
       ["https://feeds.bbci.co.uk/news/world/rss.xml", "BBC World"]
     ],
     local: [
-      ["https://www.wvtm13.com/topstories-rss", "WVTM 13"],
+      ["https://www.cbs42.com/feed", "CBS 42"],
       ["https://birminghamwatch.org/feed", "BirminghamWatch"]
     ],
     financial: [
       ["https://feeds.bbci.co.uk/news/business/rss.xml", "BBC Business"],
-      ["https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", "The New York Times", false]
+      ["https://rss.nytimes.com/services/xml/rss/nyt/Business.xml", "The New York Times"]
     ]
   };
 
