@@ -292,6 +292,7 @@ async function loadNews() {
   renderNews("news-financial", financial);
 }
  async function refresh(){const btn=$("refresh"),status=$("status");btn.disabled=true;btn.textContent="Refreshing…";status.textContent="Updating weather from the National Weather Service…";
+   loadNews();
  try{const point=await getJson(pointUrl),p=point.properties;const results=await Promise.allSettled([getJson(p.forecast),getJson("https://api.weather.gov/alerts/active?point=33.6534,-86.6086"),getJson(p.observationStations)]);
  if(results[0].status==="fulfilled")showForecast(results[0].value.properties.periods);else $("forecast").textContent="Forecast temporarily unavailable. Please try again.";
  if(results[1].status==="fulfilled")showAlerts(results[1].value.features||[]);else $("alerts").textContent="Could not check alerts. Visit weather.gov for current information.";
