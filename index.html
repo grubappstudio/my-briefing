@@ -62,31 +62,45 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:0 15px 25px}
   <div class="forecast" id="forecast"><p class="empty">Loading forecast…</p></div>
  </section>
 
- <section class="card">
-  <div class="heading"><div class="icon">🌎</div><div><h3>3. National & World News</h3><div class="sub">Important developments and headlines</div></div></div>
-  <div class="links">
-   <a class="link" href="https://news.google.com/search?q=United%20States%20national%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">U.S. National News<span>Open current national headlines</span></a>
-   <a class="link" href="https://news.google.com/search?q=world%20international%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">World & International News<span>Open current international headlines</span></a>
-   <a class="link" href="https://news.google.com/search?q=government%20public%20safety%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Government, Economy & Public Safety<span>Explore significant developments</span></a>
-  </div><p class="note">Initial version: links open current coverage. We'll work toward displaying headlines inside the app.</p>
- </section>
 
- <section class="card">
-  <div class="heading"><div class="icon">🏡</div><div><h3>4. Alabama & Birmingham News</h3><div class="sub">State and local developments</div></div></div>
-  <div class="links">
-   <a class="link" href="https://news.google.com/search?q=Alabama%20state%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Alabama News<span>Statewide news and developments</span></a>
-   <a class="link" href="https://news.google.com/search?q=Birmingham%20Alabama%20local%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Birmingham & Surrounding Area<span>Community, education, business and public safety</span></a>
-  </div><p class="note">We'll work on displaying local headlines directly in the app.</p>
- </section>
+<section class="card">
+  <div class="heading">
+    <div class="icon">🌎</div>
+    <div>
+      <h3>3. National & World News</h3>
+      <div class="sub">Important national and international developments</div>
+    </div>
+  </div>
+  <div class="news-list" id="news-national">
+    <p class="empty">Loading national and world headlines…</p>
+  </div>
+</section>
 
- <section class="card">
-  <div class="heading"><div class="icon">📈</div><div><h3>5. Stock Market & Financial News</h3><div class="sub">What investors and retirement savers should know</div></div></div>
-  <div class="links">
-   <a class="link" href="https://news.google.com/search?q=Federal%20Reserve%20inflation%20interest%20rates&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Federal Reserve, Inflation & Interest Rates<span>Economic policy and its implications</span></a>
-   <a class="link" href="https://news.google.com/search?q=US%20economy%20employment%20financial%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Economy & Employment<span>Important economic developments</span></a>
-   <a class="link" href="https://news.google.com/search?q=investing%20retirement%20savings%20financial%20news&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Investing & Retirement<span>Developments affecting long-term savers</span></a>
-  </div><p class="note">Focuses on developments and explanations, not routine daily index-point or percentage changes.</p>
- </section>
+<section class="card">
+  <div class="heading">
+    <div class="icon">🏡</div>
+    <div>
+      <h3>4. Alabama & Birmingham News</h3>
+      <div class="sub">State and local developments</div>
+    </div>
+  </div>
+  <div class="news-list" id="news-local">
+    <p class="empty">Loading Alabama headlines…</p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="heading">
+    <div class="icon">📈</div>
+    <div>
+      <h3>5. Market & Financial News</h3>
+      <div class="sub">Important developments for investors and retirement savers</div>
+    </div>
+  </div>
+  <div class="news-list" id="news-financial">
+    <p class="empty">Loading market and financial headlines…</p>
+  </div>
+</section>
  <div class="status" id="status">Weather has not been refreshed yet.</div>
 </main>
 <footer>My Morning Briefing · Personal news and weather dashboard</footer>
